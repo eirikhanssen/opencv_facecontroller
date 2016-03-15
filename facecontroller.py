@@ -21,19 +21,34 @@ def draw_rects(img, rects, color):
     for x1, y1, x2, y2 in rects:
         cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
 
+def draw_circle(img, center):
+    color = (0, 0, 255) #red color
+    #cv2.circle(img, center, 5, color, 3)
+    cv2.circle(img,center, 63, (0,0,255), -1)
+    print(type(img))
+    print("tring to draw a circle at ", center)
+
 if __name__ == '__main__':
     import sys, getopt
     print help_message
-
+    width = 640
+    height = 480
+    middle_x = None
+    middle_y = None
+    middle = None
+    left_x = None
+    right_x = None
+    top_y = None
+    bottom_y = None
     args, video_src = getopt.getopt(sys.argv[1:], '', ['cascade=', 'nested-cascade='])
     try: video_src = video_src[0]
     except: video_src = 0
     args = dict(args)
     cascade_fn = args.get('--cascade', "../../data/haarcascades/haarcascade_frontalface_alt.xml")
-    nested_fn  = args.get('--nested-cascade', "../../data/haarcascades/haarcascade_eye.xml")
+
 
     cascade = cv2.CascadeClassifier(cascade_fn)
-    nested = cv2.CascadeClassifier(nested_fn)
+
 
     cam = create_capture(video_src, fallback='synth:bg=../cpp/lena.jpg:noise=0.05')
 
@@ -44,13 +59,28 @@ if __name__ == '__main__':
 
         t = clock()
         rects = detect(gray, cascade)
-        vis = img.copy()
-        draw_rects(vis, rects, (0, 255, 0))
-        for x1, y1, x2, y2 in rects:
-            roi = gray[y1:y2, x1:x2]
-            vis_roi = vis[y1:y2, x1:x2]
-            subrects = detect(roi.copy(), nested)
-            draw_rects(vis_roi, subrects, (255, 0, 0))
+
+        try:
+            coordinates = rects[0]
+        except:
+            print("out of range")
+        else:
+            left_x = coordinates[2]
+            right_x = coordinates[0]
+            top_y = coordinates[1]
+            bottom_y = coordinates[3]
+            #middle = (middle_x,middle_y)
+            #draw_circle(img, middle)
+            #print(coordinates, middle)
+            print("left: ", left_x, ", right: ", right_x, ",top: ", top_y, ", bottom: ", bottom_y)
+
+            #print(coordinates)
+        finally:
+            vis = cv2.flip(img, 1)
+           # print(type(vis))
+            draw_rects(vis, rects, (0, 255, 0))
+
+
         dt = clock() - t
 
         draw_str(vis, (20, 20), 'time: %.1f ms' % (dt*1000))
