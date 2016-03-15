@@ -34,6 +34,7 @@ if __name__ == '__main__':
     import sys, getopt
     print help_message
     width = 640
+    halfwidth = int(width/2)
     height = 480
     middle_x = None
     middle_y = None
@@ -44,6 +45,8 @@ if __name__ == '__main__':
     bottom_y = None
     center_point = None
     vis = None
+    x_ratio = None
+    speed_x_multiplier = None
     upper_threshold = int(0.4 * height)
     args, video_src = getopt.getopt(sys.argv[1:], '', ['cascade=', 'nested-cascade='])
     try: video_src = video_src[0]
@@ -78,7 +81,15 @@ if __name__ == '__main__':
             middle_x = int((right_x - left_x)/2 + left_x)
             middle_y = int((bottom_y - top_y)/2 + top_y)
             center_point = (middle_x, middle_y)
-            print("center: ", center_point)
+            x_ratio = (center_point[0]-0.25*width)/halfwidth
+            if x_ratio < 0:
+                x_ratio = 0
+            if x_ratio > 1:
+                x_ratio = 1
+            print(x_ratio)
+            speed_x_multiplier = 1.5*x_ratio + 0.5
+            print(speed_x_multiplier) #0.5 to 2.0
+            print(str("center: " + str(center_point)))
             if center_point[1] < upper_threshold:
                 jump()
             else:
