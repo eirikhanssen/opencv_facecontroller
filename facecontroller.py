@@ -24,9 +24,11 @@ def draw_rects(img, rects, color):
 def draw_circle(img, center):
     color = (0, 0, 255) #red color
     #cv2.circle(img, center, 5, color, 3)
-    cv2.circle(img,center, 63, (0,0,255), -1)
-    print(type(img))
-    print("tring to draw a circle at ", center)
+    cv2.circle(img,center, 10, (0,0,255), -1)
+    #print("tring to draw a circle at ", center)
+
+def jump():
+    print("jumping!")
 
 if __name__ == '__main__':
     import sys, getopt
@@ -40,46 +42,49 @@ if __name__ == '__main__':
     right_x = None
     top_y = None
     bottom_y = None
+    center_point = None
+    vis = None
+    upper_threshold = int(0.4 * height)
     args, video_src = getopt.getopt(sys.argv[1:], '', ['cascade=', 'nested-cascade='])
     try: video_src = video_src[0]
     except: video_src = 0
     args = dict(args)
     cascade_fn = args.get('--cascade', "../../data/haarcascades/haarcascade_frontalface_alt.xml")
-
-
     cascade = cv2.CascadeClassifier(cascade_fn)
-
-
     cam = create_capture(video_src, fallback='synth:bg=../cpp/lena.jpg:noise=0.05')
+    #cap = cv2.VideoCapture(video_src)
+    #cap.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, width)
+    #cap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, height)
+    #cam = cap
 
     while True:
         ret, img = cam.read()
+        img = cv2.flip(img,1) # flip image horizontally
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         gray = cv2.equalizeHist(gray)
 
         t = clock()
         rects = detect(gray, cascade)
-
+        vis = img.copy()
         try:
             coordinates = rects[0]
         except:
             print("out of range")
         else:
-            left_x = coordinates[2]
-            right_x = coordinates[0]
+            left_x = coordinates[0]
+            right_x = coordinates[2]
             top_y = coordinates[1]
             bottom_y = coordinates[3]
-            #middle = (middle_x,middle_y)
-            #draw_circle(img, middle)
-            #print(coordinates, middle)
-            print("left: ", left_x, ", right: ", right_x, ",top: ", top_y, ", bottom: ", bottom_y)
-
-            #print(coordinates)
+            middle_x = int((right_x - left_x)/2 + left_x)
+            middle_y = int((bottom_y - top_y)/2 + top_y)
+            center_point = (middle_x, middle_y)
+            print("center: ", center_point)
+            if center_point[1] < upper_threshold:
+                jump()
+            else:
+                draw_circle(vis, center_point)
         finally:
-            vis = cv2.flip(img, 1)
-           # print(type(vis))
             draw_rects(vis, rects, (0, 255, 0))
-
 
         dt = clock() - t
 
