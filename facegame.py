@@ -24,7 +24,7 @@ width = 640
 halfwidth = int(width/2)
 height = 480
 middle_x = None
-middle_y = None
+middle_y = h/2
 middle = None
 left_x = None
 right_x = None
@@ -74,7 +74,7 @@ while not done:
 
     t = common.clock()
     rects = detect(gray, cascade)
-    vis = img.copy()
+    #vis = img.copy()
     try:
         coordinates = rects[0]
     except:
@@ -102,13 +102,16 @@ while not done:
         print("speed multiplier: " + str(speed_x_multiplier)) #0.5 to 2.0
         print(str("center: " + str(center_point)))
         if center_point[1] < upper_threshold:
-            draw_circle(vis, center_point, (255,0,0), proximity_ratio)
-            jump()
+            #draw_circle(vis, center_point, (255,0,0), proximity_ratio)
+            #jump()
+            print("flying high")
         else:
-            draw_circle(vis, center_point, (0,0,255), proximity_ratio)
+            #draw_circle(vis, center_point, (0,0,255), proximity_ratio)
+            print("not drawing circle..")
     finally:
-        draw_rects(vis, rects, (0, 255, 0))
-        draw_str(vis, (int(width/2)-50,int(height - height/6)), 'Speed: %.1f' % speed_x_multiplier)
+        #draw_rects(vis, rects, (0, 255, 0))
+        #draw_str(vis, (int(width/2)-50,int(height - height/6)), 'Speed: %.1f' % speed_x_multiplier)
+        print("draw the speed multiplier")
 
 
     dt = common.clock() - t
@@ -121,8 +124,9 @@ while not done:
 
     draw_str(vis, (20,50), 'Score: %.1f' % score)
 
-    cv2.imshow('facedetect', vis)
+    #cv2.imshow('facedetect', vis)
 # facecontroller code end
+    print(type(middle_y), type(h), type(height))
     chicken_y_pos = middle_y * (h/height)
 
     screen.fill((255, 255, 255))
