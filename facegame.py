@@ -1,5 +1,7 @@
 import pygame
 import os
+import sys, getopt
+from facecontroller import *
 
 w = 800
 h = 600
@@ -9,8 +11,8 @@ speed_big_cloud = 3
 speed_small_clouds = 1
 small_clouds_width = 704
 big_cloud_width = 549
-speed_x_multiplier = 0.5
-
+speed_x_multiplier = 1
+chicken_y_pos = h/2
 _image_library = {}
 
 def get_image(path):
@@ -27,11 +29,6 @@ screen = pygame.display.set_mode((w,h), pygame.SRCALPHA)
 done = False
 clock = pygame.time.Clock()
 
-#bg = pygame.image.load("images/clearsky.png")
-#chicken = pygame.image.load("images/chicken.png")
-#smallclouds = pygame.image.load("images/smallclouds.png")
-#bigclouds = pygame.image.load("images/bigclouds.png")
-
 while not done:
 
     for event in pygame.event.get():
@@ -42,7 +39,7 @@ while not done:
 
     screen.blit(get_image('images/clearsky.png'), (0, 0))
     screen.blit(get_image('images/smallclouds.png'), (small_clouds_x,h/4))
-    screen.blit(get_image('images/chicken.png'), (w/4,h/2))
+    screen.blit(get_image('images/chicken.png'), (w/4,chicken_y_pos))
     screen.blit(get_image('images/bigclouds.png'), (bigcloud_x,h/2))
 
     if bigcloud_x < -big_cloud_width:
