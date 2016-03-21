@@ -28,9 +28,9 @@ def draw_circle(img, center, color, ratio):
     cv2.circle(img,center, circle_radius, color, -1)
     #print("tring to draw a circle at ", center)
 
-def jump():
-    print("jumping!")
-    draw_str(vis, (int(width/2)-50,int(height/2)), 'AIRBORNE!') # tell user is jumping
+#def jump():
+#    print("jumping!")
+#    draw_str(vis, (int(width/2)-50,int(height/2)), 'AIRBORNE!') # tell user is jumping
 
 
 def draw_str(dst, (x, y), s):
