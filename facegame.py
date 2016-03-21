@@ -26,11 +26,11 @@ height = 480
 middle_x = None
 middle_y = h/2
 middle = None
-left_x = None
+left_x = width/2
 right_x = None
 top_y = None
 bottom_y = None
-center_point = None
+center_point = (width/2,height/2)
 vis = None
 x_ratio = None
 proximity_ratio = 1 # height of tracked face rectangle / height of webcam image, initially defaults to 1
@@ -45,6 +45,15 @@ args = dict(args)
 cascade_fn = args.get('--cascade', "../../data/haarcascades/haarcascade_frontalface_alt.xml")
 cascade = cv2.CascadeClassifier(cascade_fn)
 cam = create_capture(video_src, fallback='synth:bg=../cpp/lena.jpg:noise=0.05')
+
+def textOnScreen(screen,message, x, y):
+    font = pygame.font.SysFont("comicsansms", 42)
+    text = font.render(message, True, (255, 255, 0))
+    textrim = font.render(message, True, (255, 255, 255))
+    textbg = font.render(message, True, (0, 0, 0))
+    screen.blit(textbg, (x+2, y+2))
+    screen.blit(textrim, (x-2, y-2))
+    screen.blit(text, (x, y))
 
 def draw_face_detect(surf, edge_left, edge_right,edge_top, edge_bottom):
     color = (128,255,128)
@@ -87,8 +96,8 @@ while not done:
     try:
         coordinates = rects[0]
     except:
-        print("GAME PAUSED... (face is out of range)")
-        speed_x_multiplier = 0
+        #print("GAME PAUSED... (face is out of range)")
+        speed_x_multiplier = speed_x_multiplier
     else:
         left_x = coordinates[0]
         right_x = coordinates[2]
@@ -126,12 +135,12 @@ while not done:
     dt = common.clock() - t
 
     #draw_str(vis, (20, 20), 'time: %.1f ms' % (dt*1000))
-    if speed_x_multiplier > 0:
+    if speed_x_multiplier >= 0.5:
         score = score + dt*2**(1+speed_x_multiplier*2.5)
     else :
         draw_str(vis, (int(width/2)-50,int(height/2)), 'PAUSED!')
 
-    draw_str(vis, (20,50), 'Score: %.1f' % score)
+    #draw_str(vis, (20,50), 'Score: %.1f' % score)
 
     #cv2.imshow('facedetect', vis)
 # facecontroller code end
@@ -143,17 +152,21 @@ while not done:
     screen.blit(get_image('images/smallclouds.png'), (small_clouds_x,h/4))
     screen.blit(get_image('images/chicken.png'), (w/4,chicken_y_pos))
     screen.blit(get_image('images/bigclouds.png'), (bigcloud_x,h/2))
+    textOnScreen(screen, "Score: " + str(int(score)), 40, 0)
+    textOnScreen(screen, "Speed: " + str(round(speed_x_multiplier, 2)), 40, h-110)
     if speed_x_multiplier > 0:
         draw_face_detect(screen, left_x, right_x, top_y, bottom_y)
+    else:
+        textOnScreen(screen, "PAUSED!", w/4, h/2)
 
     if bigcloud_x < -big_cloud_width:
         bigcloud_x = w
     else:
-        bigcloud_x = bigcloud_x - speed_big_cloud * speed_x_multiplier**4
+        bigcloud_x = bigcloud_x - speed_big_cloud * ( 1 + speed_x_multiplier**4)
 
     if small_clouds_x < -small_clouds_width:
         small_clouds_x = w
     else:
-        small_clouds_x = small_clouds_x - speed_small_clouds * speed_x_multiplier**4
+        small_clouds_x = small_clouds_x - speed_small_clouds *( 1 + speed_x_multiplier**4)
     pygame.display.flip()
     clock.tick(60)
