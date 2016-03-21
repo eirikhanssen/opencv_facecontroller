@@ -46,6 +46,15 @@ cascade_fn = args.get('--cascade', "../../data/haarcascades/haarcascade_frontalf
 cascade = cv2.CascadeClassifier(cascade_fn)
 cam = create_capture(video_src, fallback='synth:bg=../cpp/lena.jpg:noise=0.05')
 
+def draw_face_detect(surf, edge_left, edge_right,edge_top, edge_bottom):
+    color = (128,255,128)
+    thickness = 5
+    edge_left = edge_left * (w/width)
+    edge_right = edge_right * (w/width)
+    edge_top = edge_top * (h/height)
+    edge_bottom = edge_bottom * (h/height)
+    pygame.draw.lines(surf, color, False, [(edge_left, edge_top), (edge_right, edge_top), (edge_right, edge_bottom), (edge_left, edge_bottom), (edge_left, edge_top)], thickness)
+
 def get_image(path):
     global _image_library
     image = _image_library.get(path)
@@ -134,6 +143,8 @@ while not done:
     screen.blit(get_image('images/smallclouds.png'), (small_clouds_x,h/4))
     screen.blit(get_image('images/chicken.png'), (w/4,chicken_y_pos))
     screen.blit(get_image('images/bigclouds.png'), (bigcloud_x,h/2))
+    if speed_x_multiplier > 0:
+        draw_face_detect(screen, left_x, right_x, top_y, bottom_y)
 
     if bigcloud_x < -big_cloud_width:
         bigcloud_x = w
