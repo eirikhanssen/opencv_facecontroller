@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 import pygame
 import os
 import sys, getopt
@@ -45,6 +46,11 @@ args = dict(args)
 cascade_fn = args.get('--cascade', "../../data/haarcascades/haarcascade_frontalface_alt.xml")
 cascade = cv2.CascadeClassifier(cascade_fn)
 cam = create_capture(video_src, fallback='synth:bg=../cpp/lena.jpg:noise=0.05')
+face_detected = False
+face_not_detected_timer = None
+game_paused = False
+now = None
+pause_threshold = 0.5
 
 def textOnScreen(screen,message, x, y):
     font = pygame.font.SysFont("comicsansms", 42)
@@ -97,8 +103,22 @@ while not done:
         coordinates = rects[0]
     except:
         #print("GAME PAUSED... (face is out of range)")
+        face_detected = False
+
+        if face_not_detected_timer == None:
+            face_not_detected_timer = common.clock()
+
+        now = common.clock()
+
+        if now - face_not_detected_timer > pause_threshold:
+            game_paused = True
+
+        print("now: ", now, "face_not_detected_timer: ", face_not_detected_timer)
         speed_x_multiplier = speed_x_multiplier
     else:
+        game_paused = False
+        face_not_detected_timer = None
+        face_detected = True
         left_x = coordinates[0]
         right_x = coordinates[2]
         top_y = coordinates[1]
@@ -135,11 +155,11 @@ while not done:
     dt = common.clock() - t
 
     #draw_str(vis, (20, 20), 'time: %.1f ms' % (dt*1000))
-    if speed_x_multiplier >= 0.5:
-        score = score + dt*2**(1+speed_x_multiplier*2.5)
-    else :
-        draw_str(vis, (int(width/2)-50,int(height/2)), 'PAUSED!')
-
+ #   if speed_x_multiplier >= 0.5:
+ #       score = score + dt*2**(1+speed_x_multiplier*2.5)
+ #   else :
+ #       draw_str(vis, (int(width/2)-50,int(height/2)), 'PAUSED!')
+#
     #draw_str(vis, (20,50), 'Score: %.1f' % score)
 
     #cv2.imshow('facedetect', vis)
@@ -154,19 +174,23 @@ while not done:
     screen.blit(get_image('images/bigclouds.png'), (bigcloud_x,h/2))
     textOnScreen(screen, "Score: " + str(int(score)), 40, 0)
     textOnScreen(screen, "Speed: " + str(round(speed_x_multiplier, 2)), 40, h-110)
-    if speed_x_multiplier > 0:
+    if face_detected:
         draw_face_detect(screen, left_x, right_x, top_y, bottom_y)
-    else:
+
+    if game_paused:
         textOnScreen(screen, "PAUSED!", w/4, h/2)
 
-    if bigcloud_x < -big_cloud_width:
-        bigcloud_x = w
-    else:
-        bigcloud_x = bigcloud_x - speed_big_cloud * ( 1 + speed_x_multiplier**4)
+    else: # the game is not paused!
+        score = score + dt*2**(1+speed_x_multiplier*2.5)
+        if bigcloud_x < -big_cloud_width:
+            bigcloud_x = w
+        else:
+            bigcloud_x = bigcloud_x - speed_big_cloud * ( 1 + speed_x_multiplier**4)
 
-    if small_clouds_x < -small_clouds_width:
-        small_clouds_x = w
-    else:
-        small_clouds_x = small_clouds_x - speed_small_clouds *( 1 + speed_x_multiplier**4)
+        if small_clouds_x < -small_clouds_width:
+            small_clouds_x = w
+        else:
+            small_clouds_x = small_clouds_x - speed_small_clouds *( 1 + speed_x_multiplier**4)
+
     pygame.display.flip()
     clock.tick(60)
